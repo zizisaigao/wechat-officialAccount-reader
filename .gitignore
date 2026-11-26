@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+output/
+output-*/
+.env
+.env.*
+*.har
+cookies*.json
+storage-state*.json
+browser-profile/
+*.tmp
+candidate-urls.txt
