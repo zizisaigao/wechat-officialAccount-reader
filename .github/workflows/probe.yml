@@ -8,23 +8,14 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - name: Inspect public client contract without credentials
+      - name: Inspect listing service definition
         shell: python
         run: |
-          import urllib.request,re,time
-          def get(url):
-              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'wechat-officialAccount-reader/0.1'}),timeout=10) as r:return r.read(2500000).decode()
-          text=get('https://reportify.cn/channels/S10740353838202886/documents')
-          urls=re.findall(r'<script[^>]*src="([^"]+)"',text)[:47]
-          for url in urls:
-              try:
-                  js=get(url)
-                  if re.search(r'reportServices[:=]|24797:\(',js):
-                      print('CLIENT',url,flush=True)
-                      print('ENDPOINTS',re.findall(r'apiService\.(?:get|post)\(.{0,180}',js)[:40],flush=True)
-                      for term in ['reportServices:', 'reportServices=', '24797:(', 'baseURL:', 'api.reportify', 'query:async']:
-                          for m in list(re.finditer(re.escape(term),js))[:2]:print('DEFINITION',js[max(0,m.start()-80):m.start()+1500],flush=True)
-                  time.sleep(.2)
-              except Exception as e:print('ERROR',type(e).__name__,flush=True)
+          import urllib.request,re
+          u='https://files.reportify.cc/fe-static/_next/static/chunks/13910-29bd235562b18499.js'
+          with urllib.request.urlopen(u,timeout=20) as r:js=r.read(3000000).decode()
+          for pattern in [r'z=new ',r'"/reports"',r'this\.query=',r'defaultRequestOptions',r'baseURL',r'H=\{',r'413120:',r'https?://[^"\s]+']:
+              print('PATTERN',pattern)
+              for m in list(re.finditer(pattern,js))[:8]:print(js[max(0,m.start()-200):m.start()+1200])
