@@ -1,0 +1,64 @@
+name: Verify account
+on:
+  workflow_dispatch:
+    inputs:
+      account:
+        description: '待核验的公众号准确名称'
+        default: '国泰海通政策和产业研究院'
+        required: true
+        type: string
+  push:
+    paths: ['.github/workflows/verify-account.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Verify exact account name and collect one page
+        env:
+          ACCOUNT: ${{ inputs.account || '国泰海通政策和产业研究院' }}
+        shell: python
+        run: |
+          import os, json, pathlib, sys
+          sys.path.insert(0, str(pathlib.Path.cwd()))
+          import reader as core
+          import crawl
+          account = os.environ['ACCOUNT']
+          client = core.Client()
+          out = pathlib.Path('verification-output'); out.mkdir(exist_ok=True)
+          audit = {'account':account, 'complete_history':False, 'url_liveness_checked':False}
+          try:
+              data = crawl.api_json(client, '/channels', {'query':account,'page_num':1,'page_size':20})
+              candidates = [{k:o.get(k) for k in ['channel_id','channel_name','chinese_name','chinese_full_name','english_name','external_id','description']} for o in data['items'] if isinstance(o,dict)]
+              audit['candidates'] = candidates
+              print('NAME_LOOKUP', json.dumps(candidates,ensure_ascii=False))
+              matches = {str(o.get('channel_id','')) for o in data['items'] if isinstance(o,dict) and account in {core.clean_text(o.get(k)) for k in ['channel_name','chinese_name','chinese_full_name','english_name']}}
+              if len(matches) != 1:
+                  audit['status']='unresolved_name'; audit['note']='No unique exact name; do not substitute a related account.'
+              else:
+                  channel = matches.pop()
+                  rows, stats = crawl.collect(client, account, '', channel, 1)
+                  rows = sorted(rows,key=lambda r:(r.get('published_at',''),r['url']),reverse=True)[:10]
+                  audit.update(stats); audit.update({'channel_id':channel,'fetched_articles':len(rows),'status':'collected' if rows else 'empty'})
+                  core.export(out,rows,audit,[])
+                  print('ARTICLES',json.dumps(rows,ensure_ascii=False))
+          except core.ReaderError as exc:
+              audit.update({'status':'source_error','error':str(exc)})
+          (out/'verification.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('AUDIT',json.dumps(audit,ensure_ascii=False))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: account-verification-${{ github.run_id }}
+          path: verification-output/
+          retention-days: 14
+          if-no-files-found: error
