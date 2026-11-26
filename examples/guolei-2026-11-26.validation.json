@@ -1,0 +1,47 @@
+{
+  "account": "郭磊宏观茶座",
+  "validated_at": "2026-11-26",
+  "workflow_url": "https://github.com/zizisaigao/wechat-officialAccount-reader/actions/runs/45751190265",
+  "workflow_commit": "d70f99aa06a437ebf7e3437e312bf74735562da3",
+  "workflow_conclusion": "success",
+  "unit_tests": 27,
+  "command": "python crawl.py 郭磊宏观茶座 --pages 10 --out output --strict",
+  "fetched_articles": 200,
+  "unique_article_keys": 200,
+  "biz_match_records": 200,
+  "source_total_count": 478,
+  "source_pages_reported": 24,
+  "source_pages_fetched": 10,
+  "rejected_records": 0,
+  "errors": [],
+  "published_at_min_utc": "2026-03-27T13:04:31+00:00",
+  "published_at_max_utc": "2026-11-23T07:06:32+00:00",
+  "complete_history": false,
+  "verified_source_listing_complete": false,
+  "url_liveness_checked": false,
+  "limitations": [
+    "此前扩展运行在第11页收到空items且total_count变为0；不视作478条已遍历，也没有尝试绕过来源限制。",
+    "本次移除账号映射后，仅使用公开名称搜索未能唯一定位该账号；新账号需要AI首次定位并保存映射。",
+    "来源为第三方公开元数据，账号标识一致不等于微信原文当前一定可打开。"
+  ],
+  "samples": [
+    {
+      "title": "【广发宏观郭磊】潮汐之间：2027年宏观环境展望",
+      "published_at": "2026-11-23T07:06:32+00:00",
+      "url": "https://mp.weixin.qq.com/s?__biz=MzI1NzAwODc3Nw%3D%3D&mid=2651317628&idx=1&sn=08f7603bc9fd3da4bab056127c3d642d&chksm=f06a1b372c1265789ff263990359beaadac36fad6d8061a41d7095731e7f6d9d85361daadd59",
+      "source_url": "https://reportify.cn/social-media/873590778061390"
+    },
+    {
+      "title": "【广发宏观王丹】11月EPMI数据简评",
+      "published_at": "2026-11-22T10:57:19+00:00",
+      "url": "https://mp.weixin.qq.com/s?__biz=MzI1NzAwODc3Nw%3D%3D&mid=2651317614&idx=2&sn=a6b4b490dbc220a7ce7ba8217ca91a0a&chksm=f0510d5b741e2cdc4bde549df2a28439bbba14f3d80e1f9f051bbddad0f45db2912670e0d5c9",
+      "source_url": "https://reportify.cn/social-media/873209561848390"
+    },
+    {
+      "title": "【广发宏观团队】黄金价格近期调整的原因是什么？",
+      "published_at": "2026-11-22T10:57:19+00:00",
+      "url": "https://mp.weixin.qq.com/s?__biz=MzI1NzAwODc3Nw%3D%3D&mid=2651317614&idx=1&sn=78dc6f70d2a8463fe283a0ba18dde32b&chksm=f02b703397609bf2c7baef20b177daa8196b144472a3a169c862fd5df53dfa1c47066f0be110",
+      "source_url": "https://reportify.cn/social-media/873209561840250"
+    }
+  ]
+}
