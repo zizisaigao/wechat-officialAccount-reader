@@ -53,7 +53,7 @@ def collect(client: core.Client, account: str, biz: str, channel: str, pages: in
     found: dict[str, dict] = {}
     signatures: set[tuple[str, ...]] = set()
     stats = {'source_total_count': None, 'source_pages_reported': None, 'source_pages_fetched': 0,
-             'source_listing_exhausted': False, 'source_count_changed': False,
+             'source_listing_exhausted': False, 'source_count_changed': False, 'source_last_total_count': None,
              'rejected_records': 0, 'errors': []}
     for page in range(1, pages + 1):
         try:
@@ -64,12 +64,16 @@ def collect(client: core.Client, account: str, biz: str, channel: str, pages: in
             if (type(total) is not int or total < 0 or type(total_pages) is not int
                     or total_pages < 0 or data.get('page_num') != page):
                 raise core.ReaderError('分页信息无效或来源忽略页码')
-            if stats['source_total_count'] is not None and stats['source_total_count'] != total:
-                stats['source_count_changed'] = True
-            stats['source_total_count'] = total
-            stats['source_pages_reported'] = total_pages
-            items = data['items']
             stats['source_pages_fetched'] += 1
+            stats['source_last_total_count'] = total
+            if stats['source_total_count'] is None:
+                stats['source_total_count'] = total
+                stats['source_pages_reported'] = total_pages
+            elif stats['source_total_count'] != total:
+                stats['source_count_changed'] = True
+                if total == 0 and found:
+                    raise core.ReaderError('来源在非空列表后把总数重置为0，可能存在分页范围限制；不能视为已遍历完整索引')
+            items = data['items']
             if not items:
                 if total and page <= total_pages:
                     raise core.ReaderError('来源声称存在文章，但该页为空')
@@ -147,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if not unique:
         return 2
-    return 3 if args.strict and (report['errors'] or report['rejected_records']) else 0
+    return 3 if args.strict and (report['errors'] or report['rejected_records'] or report.get('source_count_changed')) else 0
 
 
 if __name__ == '__main__':
