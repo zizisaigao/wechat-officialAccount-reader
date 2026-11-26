@@ -10,40 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Inspect public metadata contract
+      - name: Validate public metadata parsing
         shell: python
         run: |
-          import urllib.request, re, json
+          import urllib.request, re, json, time
           def get(url):
-              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'wechat-officialAccount-reader/0.1'}),timeout=20) as r:return r.read(3000000).decode()
-          def walk(v,depth=0):
-              if depth>30:return
-              if isinstance(v,str) and v[:1] in ('{','['):
-                  try:walk(json.loads(v),depth+1)
-                  except ValueError:pass
-              if isinstance(v,dict):
-                  if 'original_url' in v: print('METADATA',json.dumps({k:x for k,x in v.items() if not isinstance(x,(dict,list)) and len(str(x))<550},ensure_ascii=False))
-                  for x in v.values():walk(x,depth+1)
-              elif isinstance(v,list):
-                  for x in v:walk(x,depth+1)
-          for url in ['https://reportify.cn/channels/S10740353838202886/documents','https://reportify.cn/social-media/873209561848390']:
-              print('SOURCE',url,flush=True)
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'wechat-officialAccount-reader/0.1'}),timeout=15) as r:return r.read(3000000).decode()
+          text=get('https://reportify.cn/social-media/873209561848390'); parts=[]
+          for m in re.finditer(r'self\.__next_f\.push\((\[.*?\])\)\s*;?\s*</script>',text,re.S):
               try:
-                  text=get(url);parts=[]
-                  for m in re.finditer(r'self\.__next_f\.push\((\[.*?\])\)\s*;?\s*</script>',text,re.S):
-                      try:
-                          d=json.loads(m[1])
-                          if len(d)>1 and isinstance(d[1],str):parts.append(d[1])
-                      except ValueError:pass
-                  flight=''.join(parts)
-                  for m in re.finditer(r'(?:^|\n)[0-9a-f]+:([\[{])',flight):
-                      try:walk(json.JSONDecoder().raw_decode(flight[m.start(1):])[0])
-                      except ValueError:pass
-                  pos=flight.find('original_url');print('RAW_CONTEXT',flight[max(0,pos-1000):pos+600] if pos>=0 else '')
-                  if '/channels/' in url:
-                      scripts=re.findall(r'<script[^>]*src="([^"]+)"',text)
-                      selected=[s for s in scripts if '/app/' in s and ('channel' in s or 'page-' in s)][:3]
-                      print('CLIENT_FILES',selected)
-                      for s in selected:
-                          js=get(s);print('CLIENT_HINTS',[m.group(0) for m in list(re.finditer(r'.{0,160}(defaultData|/channel|channel_id|page_num|/search).{0,280}',js))[:20]])
-              except Exception as e:print('ERROR',type(e).__name__,str(e)[:200])
+                  d=json.loads(m[1])
+                  if len(d)>1 and isinstance(d[1],str):parts.append(d[1])
+              except ValueError:pass
+          flight=''.join(parts)
+          for m in re.finditer(r'"main"\s*:\s*(\{)',flight):
+              try:
+                  obj=json.JSONDecoder().raw_decode(flight[m.start(1):])[0]
+                  print('ARTICLE',json.dumps({k:obj.get(k) for k in ['report_id','title','publish_at','original_url','wechat_mp_name','channel_id']},ensure_ascii=False))
+              except ValueError as e: print('PARSE_ERROR',str(e))
+          channel=get('https://reportify.cn/channels/S10740353838202886/documents')
+          scripts=re.findall(r'<script[^>]*src="([^"]+)"',channel)
+          print('SCRIPTS',scripts)
+          for url in scripts[-20:]:
+              try:
+                  js=get(url)
+                  if 'reportServices' in js or '/reports/query' in js:
+                      print('CLIENT',url)
+                      for term in ['reportServices:', 'reportServices=', '/reports/query', 'baseURL:', 'api.reportify', 'query:async']:
+                          for m in list(re.finditer(re.escape(term),js))[:3]: print('DEFINITION',js[max(0,m.start()-200):m.start()+800])
+                  time.sleep(.3)
+              except Exception as e:print('ERROR',type(e).__name__)
