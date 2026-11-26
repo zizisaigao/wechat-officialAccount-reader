@@ -7,15 +7,19 @@ on:
         required: true
         default: '郭磊宏观茶座'
         type: string
-      seed_urls:
-        description: 'AI检索得到的 Reportify 公开文章 URL，每行一个；不填则运行内置样例'
+      pages:
+        description: '最多抓取页数，每页20篇'
+        type: choice
+        options: ['1', '3', '5', '10', '25', '50']
+        default: '1'
+      channel:
+        description: '可选：已核验的 Reportify 专栏ID；通常不需要'
         required: false
         type: string
-      pages:
-        description: '公开标题索引页数'
-        type: choice
-        options: ['0', '1', '2', '3', '4', '5']
-        default: '1'
+      seed_urls:
+        description: '可选：填入公开文章URL时改用候选详情采集模式，每行一个'
+        required: false
+        type: string
   push:
     paths: ['.github/workflows/collect.yml']
 permissions:
@@ -41,25 +45,46 @@ jobs:
         env:
           ACCOUNT: ${{ inputs.account || '郭磊宏观茶座' }}
           SEED_URLS: ${{ inputs.seed_urls }}
-          PAGES: ${{ inputs.pages || '1' }}
+          CHANNEL: ${{ inputs.channel }}
+          PAGES: ${{ inputs.pages || '25' }}
         shell: python
         run: |
           import os, pathlib, subprocess, sys
-          seeds = pathlib.Path('candidate-urls.txt')
-          seeds.write_text(os.environ.get('SEED_URLS', ''), encoding='utf-8')
-          args = [sys.executable, 'reader.py', os.environ['ACCOUNT'], '--seeds', str(seeds), '--pages', os.environ['PAGES'], '--out', 'output', '--limit', '30']
-          result = subprocess.run(args, check=False)
-          raise SystemExit(result.returncode)
-      - name: Show recovered metadata
+          seed_text = os.environ.get('SEED_URLS', '').strip()
+          if seed_text:
+              seeds = pathlib.Path('candidate-urls.txt')
+              seeds.write_text(seed_text, encoding='utf-8')
+              args = [sys.executable, 'reader.py', os.environ['ACCOUNT'], '--seeds', str(seeds), '--pages', '0', '--out', 'output', '--limit', '30']
+          else:
+              args = [sys.executable, 'crawl.py', os.environ['ACCOUNT'], '--pages', os.environ['PAGES'], '--out', 'output', '--strict']
+              if os.environ.get('CHANNEL'):
+                  args += ['--channel', os.environ['CHANNEL']]
+          raise SystemExit(subprocess.run(args, check=False).returncode)
+      - name: Verify public name lookup separately
+        if: github.event_name == 'push'
+        shell: python
+        run: |
+          import json, pathlib
+          from crawl import resolve_channel
+          from reader import Client, ReaderError
+          try:
+              result = {'account':'郭磊宏观茶座', 'lookup_without_registry':resolve_channel(Client(), '郭磊宏观茶座', {})}
+          except ReaderError as exc:
+              result = {'account':'郭磊宏观茶座', 'lookup_without_registry_error':str(exc)}
+          print(json.dumps(result, ensure_ascii=False))
+          pathlib.Path('output/discovery-check.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+      - name: Show collection summary
         if: always()
         shell: python
         run: |
-          import pathlib
-          for name in ['run.json', 'articles.json']:
-              path = pathlib.Path('output') / name
-              if path.exists():
-                  print(name)
-                  print(path.read_text(encoding='utf-8')[:30000])
+          import json, pathlib
+          report = pathlib.Path('output/run.json')
+          if report.exists(): print(report.read_text(encoding='utf-8'))
+          rows_file = pathlib.Path('output/articles.json')
+          if rows_file.exists():
+              rows = json.loads(rows_file.read_text(encoding='utf-8'))
+              print(json.dumps(rows[:3], ensure_ascii=False, indent=2))
+              print('DATE_RANGE', min((r['published_at'] for r in rows),default=''), max((r['published_at'] for r in rows),default=''))
       - uses: actions/upload-artifact@v4
         if: always()
         with:
