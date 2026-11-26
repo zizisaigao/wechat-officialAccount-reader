@@ -1,0 +1,52 @@
+{
+  "account": "国泰海通政策和产业研究院",
+  "validated_at": "2026-11-26",
+  "requested_limit": 10,
+  "status": "partial_discovery_not_account_listing",
+  "attributed_original_links": 1,
+  "native_article_metadata_verified": 0,
+  "complete_history": false,
+  "latest_ten_verified": false,
+  "articles": [
+    {
+      "account": "国泰海通政策和产业研究院",
+      "display_title": "2026医药新政全景图：16款创新药进基药、商保目录加速铺开，下半年医药产业的“真金白银”在哪？",
+      "title_origin": "reprint_page",
+      "source_published_date": "2026-08-18",
+      "original_published_at": null,
+      "url": "https://mp.weixin.qq.com/s/GSXZ5q6x7RxgV4Qoi6yfRw",
+      "source_url": "https://www.ageclub.net/article-detail/10292",
+      "verification": "explicit_reprint_attribution",
+      "evidence": "AgeClub正文页页脚明确标注本文来源国泰海通政策和产业研究院，来源超链接实际指向本条微信短链接。",
+      "original_title_verified": false,
+      "url_liveness_verified": false,
+      "notes": "展示的是转载页标题和日期，不把它们当作已核验的微信原标题和发布时间。"
+    }
+  ],
+  "attempts": [
+    {
+      "source": "Reportify GET /channels",
+      "result": "返回券商机构目录，没有按目标名称筛选；现有resolve_channel不能据此认定公众号未收录。",
+      "run_url": "https://github.com/zizisaigao/wechat-officialAccount-reader/actions/runs/45752142226"
+    },
+    {
+      "source": "Reportify POST /channels/search",
+      "result": "从站点公开客户端定位到搜索入口，匿名实测HTTP 401，响应Token is not valid；停止，没有尝试绕过认证。",
+      "run_url": "https://github.com/zizisaigao/wechat-officialAccount-reader/actions/runs/45752481094"
+    },
+    {
+      "source": "公开转载与旧号线索",
+      "result": "AgeClub成功恢复1个明确归属目标账号的微信原文入口；大数跨境候选页返回404；微信旧文章页面跳转到验证码；智慧芽当前页面没有目标账号条目。",
+      "run_url": "https://github.com/zizisaigao/wechat-officialAccount-reader/actions/runs/45752686214"
+    }
+  ],
+  "historical_identity_candidate": {
+    "name": "国君产业研究",
+    "wechat_id": "industryRCofG",
+    "historical_biz": "MzUxNjk4MjIzNg==",
+    "evidence_url": "https://www.htech360.com/a/21540",
+    "current_account_biz_confirmed": false,
+    "note": "旧名资料仅作身份线索，没有将旧号历史文章当作目标账号的最新10条。"
+  },
+  "conclusion": "本次没有取得目标公众号的可分页近期文章目录，不能宣称已采集最新10篇，也不能据此断言该公众号不存在或没有文章。已验证的郭磊宏观茶座映射及分页路径不受影响。"
+}
