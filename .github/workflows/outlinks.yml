@@ -1,0 +1,39 @@
+name: Extract article outlinks
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '公开微信文章入口地址'
+        required: true
+        default: 'https://mp.weixin.qq.com/s/VYm28mkGTaoyX2wqByMmrQ'
+        type: string
+  push:
+    branches: ['experiment/article-outlinks']
+    paths: ['extract_outlinks.py', '.github/workflows/outlinks.yml', 'tests/test_outlinks.py']
+permissions:
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests beautifulsoup4
+      - name: Extract source-page links
+        env:
+          ARTICLE_URL: ${{ inputs.url || 'https://mp.weixin.qq.com/s/VYm28mkGTaoyX2wqByMmrQ' }}
+        run: python extract_outlinks.py "$ARTICLE_URL" --out output/outlinks.json
+      - name: Show result
+        if: always()
+        run: cat output/outlinks.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wechat-outlinks-${{ github.run_id }}
+          path: output/
+          retention-days: 7
