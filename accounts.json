@@ -1,0 +1,15 @@
+{
+  "郭磊宏观茶座": {
+    "biz": "MzI1NzAwODc3Nw==",
+    "wechat_id": "gh_15a7a9ed7121",
+    "index_url": "https://www.jintiankansha.com/column/6VriGs1Enu?type=recent",
+    "reportify_channel": "S10740353838202886",
+    "seed_urls": [
+      "https://reportify.cn/social-media/873209561848390",
+      "https://reportify.cn/social-media/872792196538556",
+      "https://reportify.cn/social-media/870708174982416",
+      "https://reportify.cn/social-media/744967501013267"
+    ],
+    "seed_note": "2026-11-26 公开搜索发现的回归样例，不是自动更新的完整文章列表。新增 URL 请通过 AI Skill 发现并传入 --seeds。"
+  }
+}
