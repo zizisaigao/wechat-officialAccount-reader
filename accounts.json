@@ -11,5 +11,18 @@
       "https://reportify.cn/social-media/744967501013267"
     ],
     "seed_note": "2026-11-26 公开搜索发现的回归样例，不是自动更新的完整文章列表。新增 URL 请通过 AI Skill 发现并传入 --seeds。"
+  },
+  "国泰海通政策和产业研究院": {
+    "biz": "MzE5ODM1NDY2MA==",
+    "wechat_id": "gh_bf34d77f0f10",
+    "preferred_entrypoint": "album.py",
+    "album_urls": [
+      "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzE5ODM1NDY2MA%3D%3D&action=getalbum&album_id=4434567390462525444"
+    ],
+    "album_names": ["产业研究合集"],
+    "identity_verified_at": "2026-11-26T04:33:18+00:00",
+    "identity_evidence": "微信官方合集页 .album__author-name 与给定账号名一致，所有10条文章链接的__biz一致；页面cgiData提供user_name。",
+    "validation_run": "https://github.com/zizisaigao/wechat-officialAccount-reader/actions/runs/45755931207",
+    "coverage_note": "2026-11-26合集页显示46篇，首屏实际取得10篇。仅覆盖该合集，不是全号目录。未找到Reportify channel_id，不能与旧号国君产业研究直接合并。"
   }
 }
